@@ -15,7 +15,7 @@ let intervaloId = null
 const somPause = new Audio('./sons/pause.mp3')
 const somPlay = new Audio('./sons/play.wav')
 const somOver = new Audio('./sons/beep.mp3')
-const startPauseIcon = document.querySelector('.app__card-primary-butto-icon')
+const startPauseIcon = document.querySelector('.app__card-primary-button-icon')
 const iniciarOuPausarBt = document.querySelector('#start-pause span')
 
 musicaInput.addEventListener('click', () => {
@@ -65,7 +65,7 @@ function altContexto(contexto) {
 
             break;
 
-        case 'foco':
+        case 'descanso-longo':
             title.innerHTML = `Hora de voltar à superfície.<br>
                 <strong class="app__title-strong">Faça uma pausa longa.</strong>`
 
@@ -78,9 +78,15 @@ function altContexto(contexto) {
 
 const contagemRegressiva = () => {
     if (tempoDecorridoEmSeg <= 0) {
-        zerar()
         somOver.play()
         alert('Tempo finalizado!')
+        const focoAtivo = html.getAttribute('data-contexto') == 'foco'
+        if (focoAtivo) {
+            const evento = new CustomEvent('FocoFinalizado')
+            document.dispatchEvent(evento)
+
+        }
+        zerar()
         return
     }
     tempoDecorridoEmSeg -= 1
