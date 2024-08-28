@@ -3,8 +3,15 @@ const formAddTarefa = document.querySelector('.app__form-add-task')
 const textArea = document.querySelector('.app__form-textarea')
 const ulTarefas = document.querySelector('.app__section-task-list')
 const cancelar = document.querySelector('.app__form-footer__button--cancel')
+const paragrafoDescricaoTarefa = document.querySelector('.app__section-active-task-description')
+const btnRemoverConcluidas = document.querySelector('#btn-remover-concluidas')
+const btnRemoverTodas = document.querySelector("#btn-remover-todas")
 
-const tarefas = JSON.parse(localStorage.getItem('tarefas')) || []
+let tarefas = JSON.parse(localStorage.getItem('tarefas')) || []
+
+let tarefaSelecionada = null
+let liTarefaSelecionada = null
+
 function attTarefas() {
     localStorage.setItem('tarefas', JSON.stringify(tarefas))
 }
@@ -13,7 +20,7 @@ function criarElementoTarefa(tarefa) {
     const li = document.createElement('li')
     li.classList.add("app__section-task-list-item")
 
-    const svg = document.createElement('sgv')
+    const svg = document.createElement('svg')
     svg.innerHTML = `
     <svg class="app__section-task-icon-status" width="24" height="24" viewBox="0 0 24 24" fill="none"
             xmlns="http://www.w3.org/2000/svg">
@@ -38,6 +45,9 @@ function criarElementoTarefa(tarefa) {
             attTarefas()
         }
 
+
+    }
+
     const imgBotao = document.createElement('img')
     imgBotao.setAttribute('src', './imagens/edit.png')
     btnNovaTarefa.append(imgBotao)
@@ -45,6 +55,23 @@ function criarElementoTarefa(tarefa) {
     li.append(svg)
     li.append(paragrafo)
     li.append(btnNovaTarefa)
+
+    li.onclick = () => {
+        document.querySelectorAll('.app__section-task-list-item-active')
+            .forEach(elemento => {
+                elemento.classList.remove('app__section-task-list-item-active')
+            })
+        if (tarefaSelecionada == tarefa) {
+            paragrafoDescricaoTarefa.textContent = ''
+            tarefaSelecionada = null
+            liTarefaSelecionada = null
+            return
+        }
+        tarefaSelecionada = tarefa
+        liTarefaSelecionada = li
+        paragrafoDescricaoTarefa.textContent = tarefa.descrição
+        li.classList.add('app__section-task-list-item-active')
+    }
 
     return li
 }
@@ -77,3 +104,25 @@ cancelar.onclick = () => {
     textArea.value = ''
     formAddTarefa.classList.toggle('hidden')
 }
+
+document.addEventListener('FocoFinalizado', () => {
+    if (tarefaSelecionada && liTarefaSelecionada) {
+        liTarefaSelecionada.classList.remove('app__section-task-list-item-active')
+        liTarefaSelecionada.classList.add('app__section-task-list-item-complete')
+        liTarefaSelecionada.querySelector('button').setAttribute('disabled', 'disabled')
+
+    }
+})
+
+const removerTarefas = (somenteCompletas) => {
+    let seletor = somenteCompletas ? '.app__section-task-list-item-complete' : '.app__section-task-list-item'
+    document.querySelectorAll(seletor).forEach(elemento => {
+        elemento.remove()
+    })
+    tarefas = somenteCompletas ? tarefas.filter(tarefa => !tarefa.completa) : []
+    attTarefas()
+}
+
+btnRemoverConcluidas.onclick = () => removerTarefas(true)
+btnRemoverTodas.onclick = () => removerTarefas(false)
+
